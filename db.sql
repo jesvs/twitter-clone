@@ -1,4 +1,7 @@
+-- import as root
 create database twitter;
+create user 'twitter_user'@'localhost';
+grant all privileges on twitter.* to 'twitter_user'@'localhost';
 use twitter;
 
 create table Tweets (

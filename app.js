@@ -3,11 +3,13 @@
 var mysql = require('mysql');
 var express = require('express');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var authUser = require('./middleware/auth-user');
 var moment = require('moment');
 var app = express();
 var connection = mysql.createConnection({
     host: '127.0.0.1',
-    user: 'root',
+    user: 'twitter_user',
     password: '',
     database: 'twitter'
 });
@@ -27,23 +29,26 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get('/', function(req, res) {
     var query = 'select * from Tweets order by created_at desc';
+    var tweetsCreated = req.cookies.tweets_created || [];
 
     connection.query(query, function(err, results) {
         if (err) {
             console.log(err);
         }
-        results.forEach(function(result) {
-             result.time_from_now = moment(result.created_at).fromNow();
+        results.forEach(function(tweet) {
+             tweet.time_from_now = moment(tweet.created_at).fromNow();
+             tweet.isEditable = tweetsCreated.includes(tweet.id);
         });
 
         res.render('tweets', {tweets: results});
     });
 });
 
-app.get('/tweets/:id([0-9]+)/edit', function(req, res) {
+app.get('/tweets/:id([0-9]+)/edit', authUser, function(req, res) {
     var query = 'select * from Tweets where id = ?';
     var id = req.params.id;
 
@@ -59,7 +64,7 @@ app.get('/tweets/:id([0-9]+)/edit', function(req, res) {
     })
 });
 
-app.post('/tweets/:id([0-9]+)/update', function(req, res) {
+app.post('/tweets/:id([0-9]+)/update', authUser, function(req, res) {
     var updateQuery = 'update Tweets set body = ?, handle = ? where id = ?';
     var deleteQuery = 'delete from Tweets where id = ?';
     var id = req.params.id;
@@ -84,12 +89,15 @@ app.post('/tweets/create', function(req, res) {
     var query = 'insert into Tweets(handle, body) values(?, ?)';
     var handle = req.body.handle;
     var body = req.body.body;
+    var tweetsCreated = req.cookies.tweets_created || [];
 
-    connection.query(query, [handle, body], function(err) {
+    connection.query(query, [handle, body], function(err, results) {
         if (err) {
             console.log(err);
         }
 
+        tweetsCreated.push(results.insertId);
+        res.cookie('tweets_created', tweetsCreated, {httpOnly: true});
         res.redirect('/');
     });
 });
