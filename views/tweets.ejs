@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="/css/site.css" media="all">
+</head>
+<body>
+    <header></header>
+    <main>
+        <form id="tweet-form" action="/tweets/create" method='post'>
+            <input id="tweet-form-handle" type="text" name="handle" placeholder="DonkkaShane">
+            <textarea id="tweet-form-body" name="body" plceholder="What's happening?"></textarea>
+            <button id="tweet-form-button">Tweet</button>
+        </form>
+        <% tweets.forEach(function (tweet) { %>
+            <%- include('_tweet', {tweet: tweet}) %>
+        <% }) %>
+    </main>
+</body>
+</html>

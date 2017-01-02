@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="/css/site.css" media="all">
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <%- include('_tweet', {tweet: tweet}) %>
+        <form id="tweet-form" action="/tweets/<%= tweet.id %>/update" method="post">
+            <input id="tweet-form-handle" type="text" name="handle"
+                placeholder="jesvs" value="<%= tweet.handle %>">
+            <textarea id="tweet-form-body" name="body"
+               placeholder="What's happening?"><%= tweet.body %></textarea>
+            <button id="tweet-form-button">Update Tweet</button>
+            <button id="tweet-form-delete-button" name="delete_button"
+                onclick="return confirm('Are you sure you want to delete the tweet?')">Delete Tweet</button>
+        </form>
+    </main>
+</body>
+</html>
